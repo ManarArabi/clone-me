@@ -111,3 +111,7 @@ After editing `SKILL.md`, rebuild the bundle:
 ```bash
 rm -f clone-me.skill && zip -qr clone-me.skill clone-me
 ```
+
+## 📜 License
+
+[MIT](LICENSE). Use it, fork it, clone yourself. 🧬
