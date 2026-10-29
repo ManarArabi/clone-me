@@ -4,6 +4,24 @@ A Claude skill that learns your personal code style and keeps it current.
 
 It builds a style skill from your past commits and PR review comments. After that, it turns every correction you make to Claude's code into a rule. Over time Claude writes code the way you would and stops repeating the mistakes you already fixed.
 
+## Baseline
+
+Every style skill it builds starts from three rules. Learned rules add to them.
+
+- **Your language, done right.** Claude uses the language, version, framework and tooling your repo already uses, and follows that language's current best practices and your linter config.
+- **Secure and robust by default.** This covers:
+  - input validation at the boundary;
+  - parameterised queries;
+  - no hard-coded secrets;
+  - authorisation checks;
+  - explicit error handling that fails closed;
+  - timeouts and limits;
+  - race-safe writes;
+  - few, pinned dependencies.
+
+  A learned habit can never override a security rule. If one conflicts, Claude asks you instead.
+- **No useless comments.** No comments that restate the code, narrate a change, or leave ownerless TODOs. A comment stays only when the code can't show the reason.
+
 ## How it works
 
 1. **Learns from your history.** On first use it asks which repos or PRs to learn from, and for your GitHub username. It reads them without changing anything:
