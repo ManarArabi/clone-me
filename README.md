@@ -1,80 +1,113 @@
-# learn-code-style
+# 🧬 clone-me
 
-A Claude skill that learns your personal code style and keeps it current.
+**Teach Claude to code and review like you. Then never repeat yourself again.**
 
-It builds a style skill from your past commits and PR review comments. After that, it turns every correction you make to Claude's code into a rule. Over time Claude writes code the way you would and stops repeating the mistakes you already fixed.
+You've fixed the same thing in Claude's code five times. Nested `if`s. Pointless comments. A query built with string glue. And its reviews flag nitpicks you don't care about while missing the things you always catch. `clone-me` makes the sixth time never happen.
 
-## Baseline
+It studies how you code and review, listens every time you push back, and turns each correction into a rule. Session after session, Claude writes and reviews more like you and less like a stranger.
 
-Every style skill it builds starts from three rules. Learned rules add to them.
+## ⚡ What it does
 
-- **Your language, done right.** Claude uses the language, version, framework and tooling your repo already uses, and follows that language's current best practices and your linter config.
-- **Secure and robust by default.** This covers:
-  - input validation at the boundary;
-  - parameterised queries;
-  - no hard-coded secrets;
-  - authorisation checks;
-  - explicit error handling that fails closed;
-  - timeouts and limits;
-  - race-safe writes;
-  - few, pinned dependencies.
+**🔍 Studies your past work.** On day one it asks which repos or PRs to learn from. Then it reads, without touching anything:
+- your commits;
+- the review comments you left on teammates' PRs (the best source, because every comment is a correction you made);
+- the feedback you accepted on your own PRs.
 
-  A learned habit can never override a security rule. If one conflicts, Claude asks you instead.
-- **No useless comments.** No comments that restate the code, narrate a change, or leave ownerless TODOs. A comment stays only when the code can't show the reason.
+Only patterns that show up again and again make the cut. You see the list first and remove anything that isn't you.
 
-## How it works
+**👂 Learns from every correction.** "Make this simpler." "Move it to utils." A review comment. Even you quietly fixing its code without saying a word, because it checks `git diff`. Each one becomes a one-line rule.
 
-1. **Learns from your history.** On first use it asks which repos or PRs to learn from, and for your GitHub username. It reads them without changing anything:
-   - your own commits;
-   - the review comments you left on other people's PRs;
-   - comments others left on your PRs that you then fixed.
+**🕵️ Reviews like you.** Ask it to review a PR or your local changes and it checks, in order:
+1. **Logic and common sense:** bugs, edge cases, races, broken callers, dead code.
+2. **Security.**
+3. **Your rules,** including the things you always flag in reviews.
+4. **Language best practices.**
+5. **Useless comments.**
 
-   It keeps only patterns that repeat across several PRs or files. Then it shows you the rules it found so you can remove any that are wrong.
-2. **Learns from your corrections.** After Claude writes code, any change you ask for, review comment you give, or edit you make yourself becomes a one-line rule. Claude checks `git diff` to catch silent edits too.
-3. **Keeps the rules clean.**
-   - A new rule sharpens an existing one instead of duplicating it.
-   - A rule that contradicts an old one replaces it.
-   - Business logic and one-off choices are never recorded.
-4. **Tells you what changed.** One line per update, for example:
+It reads the existing PR threads first so it never repeats a teammate. It confirms every finding is real before reporting it. And it never posts anything unless you say so.
 
-   > Style skill: added "Return early instead of nesting `if` blocks" under Structure.
+**💬 Learns from review arguments too.**
+- You say "nah, that's fine": the clone stops flagging it.
+- You point out something it missed: it flags it next time.
+- You reword its comment: it writes the next one your way.
 
-Rules go into the implementation or review skill you already use. If you have none, the skill creates `~/.claude/skills/my-code-style/SKILL.md`.
+Security and correctness bugs can't be argued away.
 
-## Install
+**🧹 Keeps the rulebook tidy.** It sharpens existing rules instead of piling up duplicates and replaces rules you've outgrown. It never saves one-off business logic.
+
+**📣 Tells you what it learned.** One line, no fuss:
+
+> Style skill: added "Return early instead of nesting `if` blocks" under Structure.
+
+## 🛡️ The baseline: your clone has standards
+
+Every clone starts from three rules. Your habits build on top of them.
+
+- **Speaks your language.** It uses the language, framework and tooling already in your repo, and follows its best practices and your linter config. No surprise rewrites or dependencies.
+- **Secure by default:**
+  - checks all input at the boundary;
+  - uses parameterised queries;
+  - keeps secrets out of the code;
+  - checks permissions on every protected action;
+  - handles errors and fails safe;
+  - sets timeouts and limits;
+  - makes race-safe writes.
+- **Zero useless comments.** No comments that repeat the code, no "added X", no orphan TODOs. A comment survives only when the code can't explain itself.
+
+> 🚫 Your clone copies your style, not your shortcuts. Teach it to glue SQL strings together and it will refuse, tell you which security rule that breaks, and offer a safe alternative.
+
+## 🚀 Get started
 
 **Claude Code:** copy the folder into your skills directory.
 
 ```bash
-cp -R learn-code-style ~/.claude/skills/
+cp -R clone-me ~/.claude/skills/
 ```
 
-**Claude app:** upload `learn-code-style.skill` under Settings → Capabilities → Skills.
+**Claude app:** upload `clone-me.skill` under Settings → Capabilities → Skills.
 
-## Usage
+Then say:
 
-Start with:
+> Clone me. Learn my style from my PRs.
 
-> Learn my code style from my PRs.
+Or:
 
-After that it runs on its own whenever you correct code Claude wrote. You can also trigger it with "remember how I like this" or "update my style skill".
+> Review PR 123 like me.
 
-## Requirements
+From then on it runs on its own whenever you correct Claude's code or push back on its review findings. You can also say "code like me", "remember how I like this" or "update my style skill".
 
-- `git` for local repos.
+Your rules live in your existing implementation or review skill. If you don't have one, it creates `~/.claude/skills/my-code-style/SKILL.md`.
+
+## 🧰 Requirements
+
+- `git`, for local repos.
 - [GitHub CLI](https://cli.github.com/) (`gh`), signed in, to read PRs and review comments.
 
-## Files
+## ✅ Tested
+
+It was run in throwaway repos on four scenarios:
+- the first run;
+- a silent edit by the user;
+- writing a new endpoint;
+- an unsafe "remember this" request.
+
+All four passed.
+
+Review mode was tested on two more:
+- a full review of a PR seeded with ten bugs;
+- the user pushing back on a review.
+
+Both passed.
+
+## 📁 What's inside
 
 | Path | What it is |
 | --- | --- |
-| `learn-code-style/SKILL.md` | The skill itself |
-| `learn-code-style.skill` | Bundled file for uploading to the Claude app |
-
-## Updating the bundle
+| `clone-me/SKILL.md` | The skill |
+| `clone-me.skill` | Bundled file for the Claude app |
 
 After editing `SKILL.md`, rebuild the bundle:
 
 ```bash
-rm learn-code-style.skill && zip -qr learn-code-style.skill learn-code-style
+rm -f clone-me.skill && zip -qr clone-me.skill clone-me
 ```
