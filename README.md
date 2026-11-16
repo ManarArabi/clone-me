@@ -18,7 +18,7 @@ Only patterns that show up again and again make the cut. You see the list first 
 **👂 Learns from every correction.** "Make this simpler." "Move it to utils." A review comment. Even you quietly fixing its code without saying a word, because it checks `git diff`. Each one becomes a one-line rule.
 
 **🕵️ Reviews like you.** Ask it to review a PR or your local changes and it checks, in order:
-1. **Logic and common sense:** bugs, edge cases, races, broken callers, dead code.
+1. **Logic and common sense:** bugs, edge cases, races, broken callers, dead code, unverified assumptions and unhandled cases.
 2. **Security.**
 3. **Your rules,** including the things you always flag in reviews.
 4. **Language best practices.**
@@ -41,8 +41,11 @@ Security and correctness bugs can't be argued away.
 
 ## 🛡️ The baseline: your clone has standards
 
-Every clone starts from three rules. Your habits build on top of them.
+Every clone starts from these rules. Your habits build on top of them.
 
+- **Assumes nothing.** If a requirement, field, API or business rule is unclear, it checks the code, docs or data, or asks you. It never invents fields, endpoints or config.
+- **Leaves no gaps.** It handles null, empty, duplicate and invalid input, failing calls, retries, races and every enum branch. The only gaps it leaves are acceptable ones, and it names each of them.
+- **Writes declarative code.** It writes `map`, `filter` and `reduce` instead of loops with mutable state, lookup tables instead of long `if`/`switch` chains, and small pure functions.
 - **Speaks your language.** It uses the language, framework and tooling already in your repo, and follows its best practices and your linter config. No surprise rewrites or dependencies.
 - **Secure by default:**
   - checks all input at the boundary;

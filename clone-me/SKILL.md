@@ -1,7 +1,7 @@
 ---
 name: clone-me
 description: |
-  Codes and reviews like the user. Learns their style from past commits and PR review comments, applies it with a baseline of language best practices, secure code and no useless comments, and turns every correction or review discussion into a rule so it is never needed twice. Use when reviewing code ("review my PR", "review PR 123", "review these changes"); after writing code whenever the user corrects it (a requested change, a review comment, or a silent edit or revert); when the user agrees, disagrees with or adds to your review findings; and when the user says "clone me", "code like me", "learn my style", "learn from my PRs", "remember how I like this" or "update my style skill", or has no style skill yet.
+  Codes and reviews like the user. Learns their style from past commits and PR review comments, applies it with a baseline of no assumptions, no unhandled gaps, declarative code, language best practices, secure code and no useless comments, and turns every correction or review discussion into a rule so it is never needed twice. Use when reviewing code ("review my PR", "review PR 123", "review these changes"); after writing code whenever the user corrects it (a requested change, a review comment, or a silent edit or revert); when the user agrees, disagrees with or adds to your review findings; and when the user says "clone me", "code like me", "learn my style", "learn from my PRs", "remember how I like this" or "update my style skill", or has no style skill yet.
 ---
 
 # Clone me: code and review the way the user does
@@ -14,11 +14,14 @@ Write rules into the skill the user already uses for implementing or reviewing c
 
 If no style skill exists, create `~/.claude/skills/my-code-style/SKILL.md` with a `name`, a `description` saying it holds the user's personal code style and should be used when writing or reviewing code, a `## Baseline` section holding the rules below, one section per topic (naming, structure, tests, comments, errors, security, and so on), and a `## Review` section with three lists: `Flag`, `Don't flag` and `How to write findings`. Tell the user you created it. If the user already has a style skill without a baseline, add the `## Baseline` section to it and say so.
 
-## Baseline: language, security and comments
+## Baseline: no assumptions, no gaps, declarative, secure, no useless comments
 
 These hold for all code written under the style skill. Learned rules add to them and may override a style choice, but never a security rule.
 
 - **Write in the user's language.** Use the language, version, framework and tooling the repo already uses, detected from its files (`package.json`, `tsconfig.json`, `pyproject.toml`, `go.mod`, `Cargo.toml`, `pom.xml`, and so on). Don't switch languages or add a new framework or dependency unless asked.
+- **Don't assume anything.** When a requirement, data shape, API behaviour, config value or business rule is unclear, confirm it from the code, docs, schema or data, or ask the user. Never invent fields, endpoints, env vars or behaviour. If you must proceed on an assumption, say so in the reply.
+- **Leave no gaps.** Handle every case the code can meet: missing, null, empty, duplicate and invalid input; each external call failing or timing out; retries and concurrent requests; and every branch of every status or enum. Leave a case unhandled only when it's acceptable: out of scope, or impossible because of a guarantee you checked. Name each such gap in the reply.
+- **Write declarative code.** Say what the code does, not each step of how. Prefer `map`, `filter` and `reduce` (or the language's equivalent) over loops with mutable accumulators, lookup tables and config over long `if`/`switch` chains, query pipelines over manual post-processing, and small pure functions over shared mutable state. Keep imperative code only where it's clearer or needed for performance.
 - **Follow that language's current best practices:** its idiomatic style and naming, its official style guide, the repo's linter and formatter config, strict types where the language has them (no `any` in TypeScript, type hints in Python), and its standard library before new dependencies.
 - **Write secure, robust code by default:**
   - Validate and type-check all external input at the boundary: request bodies, query params, headers, files, env vars and third-party responses.
@@ -56,10 +59,10 @@ When asked to review a PR, a branch or local changes, review it the way the user
 1. **Get the change.** For a PR: `gh pr view <n>` and `gh pr diff <n>`. For local work: `git diff` against the base branch. Read the surrounding code as well as the diff, so you understand what changed.
 2. **Read the discussion so far.** For a PR, read the existing review threads and comments (`gh api repos/<owner>/<repo>/pulls/<n>/comments` and `gh pr view <n> --comments`). Don't repeat a point someone already raised. Report only new findings, and say when you agree with an open thread.
 3. **Check it in this order:**
-   - **Correctness and common sense:** does it do what the PR or ticket says? Look for logic errors, wrong conditions, off-by-one errors, missing awaits, unhandled null or empty cases, broken edge cases, wrong error handling, data loss and races. Check for behaviour changes for existing callers, and missing migrations or backfills. Check for leftover debug code, dead code, and code that duplicates an existing helper.
+   - **Correctness and common sense:** does it do what the PR or ticket says? Look for logic errors, wrong conditions, off-by-one errors, missing awaits, unhandled null or empty cases, broken edge cases, wrong error handling, data loss and races. Check for behaviour changes for existing callers, and missing migrations or backfills. Check for leftover debug code, dead code, and code that duplicates an existing helper. Flag unverified assumptions (a field, response shape or behaviour the code relies on but nothing guarantees) and unhandled cases that aren't acceptable gaps.
    - **Security and robustness:** every Baseline security rule.
    - **The user's learned rules:** everything in the style skill, especially `Review > Flag`. Skip anything listed under `Review > Don't flag`.
-   - **Language best practices and the repo's conventions:** idioms, types, naming, structure, and tests for the new behaviour.
+   - **Language best practices and the repo's conventions:** idioms, types, naming, structure, imperative code that would be clearer written declaratively, and tests for the new behaviour.
    - **Comments:** flag useless comments, as the Baseline defines them.
 4. **Verify before reporting.** For each finding, re-read the code and confirm it's real: name the input or state that breaks it. Drop anything you can't back up, or mark it as a question.
 5. **Report.** Rank findings from most severe to least. Give each one a `file:line`, a one-line problem and a one-line fix. Follow `Review > How to write findings`, and keep each finding to one or two lines unless the user's rules say otherwise. Put the evidence in your reply to the user, not in the comment text.
